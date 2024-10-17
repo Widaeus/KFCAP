@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Specify your desired Python version
+          python-version: '3.13'  # Specify your desired Python version
 
       # Step 3: Install dependencies (including test dependencies)
       - name: Install dependencies
