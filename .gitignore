@@ -8,3 +8,6 @@ __pycache__/
 # Ignore IDE files
 .vscode/
 .idea/
+
+# Ignore data files
+data/
