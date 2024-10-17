@@ -6,7 +6,7 @@ import getpass
 
 def export_redcap_data(api_token=None):
     """
-    Exports REDCap data to a CSV file.
+    Exports REDCap data to a df.
 
     This function makes an API request to export REDCap data, converts the response to a pandas DataFrame,
     and returns it.
@@ -25,14 +25,18 @@ def export_redcap_data(api_token=None):
     data = {
         'token': api_token,
         'content': 'record',
+        'action': 'export',
         'format': 'json',
         'type': 'flat',
+        'csvDelimiter': '',
         'rawOrLabel': 'raw',
         'rawOrLabelHeaders': 'raw',
         'exportCheckboxLabel': 'false',
+        'exportSurveyFields': 'false',
+        'exportDataAccessGroups': 'false',
         'returnFormat': 'json'
     }
-
+    
     # Make the API request
     response = requests.post('https://redcap.ki.se/redcap/api/', data=data)
 
@@ -69,7 +73,7 @@ def import_redcap_data(file_path, api_token=None, write='normal'):
         api_token = getpass.getpass("Enter your REDCap API token: ")
 
     # Define the API URL
-    api_url = 'https://redcap.ki.se/redcap/api/'
+    api_url = 'https://redcap.ki.se/api/'
 
     # Read the CSV file content as a string
     with open(file_path, 'r') as file:
@@ -97,3 +101,44 @@ def import_redcap_data(file_path, api_token=None, write='normal'):
     else:
         print('Data import failed.')
         print('Response:', response.text)
+        
+
+def export_redcap_info(api_token=None):
+    """
+    Exports REDCap info and prints it.
+
+    This function makes an API request to export REDcap project data and prints it.
+
+    Parameters:
+    api_token (str): The API token for authentication.
+
+    Example:
+    export_redcap_info('your_api_token')
+    """
+    # Prompt the user for the API key if not provided
+    if api_token is None:
+        api_token = getpass.getpass("Enter your REDCap API token: ")
+
+    # Set up the parameters for the API request
+    data = {
+        'token': api_token,
+        'content': 'project',
+        'format': 'json',
+        'returnFormat': 'json'
+    }
+    
+    # Make the API request
+    response = requests.post('https://redcap.ki.se/api/', data=data)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        print("Export successful")
+    else:
+        print(f"Error: {response.status_code}")
+        print(response.text)
+        return
+
+    # Convert the API response to a pandas DataFrame
+    print(response.json())
+
+    pass
