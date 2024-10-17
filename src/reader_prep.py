@@ -1,3 +1,5 @@
+# If you need to add more studies to the program, add the necessary code to clean_olo and match_to_redcap
+
 # Load dependencies
 import os
 import pandas as pd
@@ -119,15 +121,11 @@ def read_convert(data_path):
     
     return concatenated_data
 
-##########
-# reading and conversion done
-##########
-
 # cleaning and fitting
-def clean_olo(data, identifier, study="scapis_spectrum"):
+def clean_olo(data, study):
     # Check if the study argument is valid
     if study not in ["mind", "scapis_spectrum"]:
-        raise ValueError("The study argument must be either 'mind' or 'scapis_spectrum'.")
+        raise ValueError("The study argument is not defined for this program.")
 
     # Remove tests (rows where 'sample_id' contains 'test', case-insensitive)
     data = data[~data['sample_id'].str.contains("test", case=False, na=False)]
@@ -171,15 +169,14 @@ def clean_olo(data, identifier, study="scapis_spectrum"):
     # Add a new column 'prover_complete' and set it to 1
     data['prover_complete'] = 1
 
-    # Filter based on study type
+    # Filter based on study
     if study == "scapis_spectrum":
         data = data[~data['sample_id'].str.contains("MD", case=False, na=False)]
+        data = data.rename(columns={'sample_id': 'scapisstudynr'})
     elif study == "mind":
         data = data[data['sample_id'].str.contains("MD", case=False, na=False)]
-
-    # Rename 'sample_id' to the identifier provided
-    data = data.rename(columns={'sample_id': identifier})
-
+        data = data.rename(columns={'sample_id': 'studyid'})
+        
     # Define new column names
     new_colnames = [
         "sample_type", "slide_id", "kit_id", "wbc_109l", "wbc_flagged",
@@ -205,16 +202,16 @@ def clean_olo(data, identifier, study="scapis_spectrum"):
     return data
 
 # matching to REDcap
-def match_to_redcap(data_olo, identifier, study="scapis_spectrum", api_token=None):
-    # Check if the study argument is valid
-    if study not in ["mind", "scapis_spectrum"]:
-        raise ValueError("The study argument must be either 'mind' or 'scapis_spectrum'.")
+def match_to_redcap(data_olo, study, api_token=None):
 
     # Function to export REDCap data (this should be defined based on your API or database structure)
-    data_redcap = utils.export_redcap_data(study, api_token)
+    data_redcap = utils.export_redcap_data(api_token)
 
-    # Perform a left join on the REDCap data based on 'scapisstudynr'
-    data_ammended = pd.merge(data_olo, data_redcap[[identifier, study]], how='left', on=identifier)
+    # Perform a left join on the REDCap data based on study
+    if study == "scapis_spectrum":
+        data_ammended = pd.merge(data_olo, data_redcap[['scapisstudynr', study]], how='left', on='scapisstudynr')
+    elif study == "mind":
+        data_ammended = pd.merge(data_olo, data_redcap[['studyid', study]], how='left', on='studyid')
 
     return data_ammended
 
@@ -238,19 +235,16 @@ def write_to_csv(df):
 
     print(f"Data successfully exported to {file_path}")
     
-##########
-# Combination function
-##########
-
-def reader_prep_csv(data_path, identifier, study, api_token=None):
+# Main function
+def reader_prep_csv(data_path, study, api_token=None):
     # Read and convert the data
     data_olo = read_convert(data_path)
 
     # Clean and fit the data
-    data_cleaned = clean_olo(data_olo, identifier, study)
+    data_cleaned = clean_olo(data_olo, study)
 
     # Match the data to REDCap
-    data_matched = match_to_redcap(data_cleaned, identifier, study, api_token)
+    data_matched = match_to_redcap(data_cleaned, study, api_token)
     
     # Write to csv
     write_to_csv(data_matched)

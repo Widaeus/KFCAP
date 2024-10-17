@@ -1,3 +1,8 @@
-import reader_prep
+from reader_prep import reader_prep_csv
+from utils import export_redcap_data
 
-reader_prep_csv(data_path, identifier, study)
+data_path = 'data/raw'
+study = 'scapis_spectrum'
+
+df = export_redcap_data()
+print(df.head())

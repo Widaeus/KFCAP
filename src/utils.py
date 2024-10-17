@@ -4,21 +4,18 @@ import os
 from datetime import datetime
 import getpass
 
-def export_redcap_data(output_dir, study, api_token=None):
+def export_redcap_data(api_token=None):
     """
     Exports REDCap data to a CSV file.
 
     This function makes an API request to export REDCap data, converts the response to a pandas DataFrame,
-    and saves it as a CSV file in the specified output directory. The CSV file is named with the current date
-    and the study name as a prefix.
+    and returns it.
 
     Parameters:
     api_token (str): The API token for authentication.
-    output_dir (str): The directory where the CSV file will be saved.
-    study (str): The name of the study to be used as a prefix for the export file's name.
 
     Example:
-    export_redcap_data('your_api_token', 'C:\\path\\to\\output\\directory', 'study')
+    export_redcap_data('your_api_token')
     """
     # Prompt the user for the API key if not provided
     if api_token is None:
