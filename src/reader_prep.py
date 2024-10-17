@@ -131,14 +131,10 @@ def clean_olo(data, api_token):
     # Remove duplicate rows
     data = data.drop_duplicates()
 
-    # Remove rows where 'reject_reason' is not NA
-    data = data[data['reject_reason'].isna()]
-
+    data = data[~data['reject_reason'].str.contains("test", case=False, na=False)]
+    
     # Filter rows with correct scan_time formatting (HH:MM:SS)
     data = data[data['scan_time'].str.match(r"^\d{2}:\d{2}:\d{2}$", na=False)]
-
-    # Convert columns to appropriate data types
-    data = data.apply(pd.to_numeric)
 
     # Function to count decimal places in a number
     def count_decimals(x):
@@ -152,7 +148,7 @@ def clean_olo(data, api_token):
     # Process the data
     data['decimal_count'] = data['mch [pg]'].apply(count_decimals)
     data['flag_present'] = ~data['flags'].isna()
-
+    
     # Sort by 'flag_present' and 'decimal_count', then keep the first row for each 'sample_id'
     data = (data.sort_values(by=['flag_present', 'decimal_count'], ascending=[False, False])
                 .drop_duplicates(subset=['sample_id'])
@@ -163,44 +159,11 @@ def clean_olo(data, api_token):
 
     # Drop specific columns
     data = data.drop(columns=['patient_id', 'patient_name', 'patient_date_of_birth', 'sex', 'age'])
-
-    # Add a new column 'prover_complete' and set it to 1
-    data['prover_complete'] = 1
-
-    # Check project title
-    project_title = project_info.get('project_title', '')
     
-    # Filter based on study
-    if project_title == 'SCAPIS2_Spectrum':
-        data = data[~data['sample_id'].str.contains("MD", case=False, na=False)]
-        data = data.rename(columns={'sample_id': 'scapisstudynr'})
-    elif project_title == 'MIND':
-        data = data[data['sample_id'].str.contains("MD", case=False, na=False)]
-        data = data.rename(columns={'sample_id': 'studyid'})
-        
-    # Define new column names
-    new_colnames = [
-        "sample_type", "slide_id", "kit_id", "wbc_109l", "wbc_flagged",
-        "rbc_1012l", "rbc_flagged", "plt_109l", "plt_flagged", "hgb_gl",
-        "hgb_flagged", "hct_ll", "hct_flagged", "mcv_fl", "mcv_flagged",
-        "rdw__percent", "rdw_flagged", "mch_pg", "mch_flagged", "mchc_gl",
-        "mchc_flagged", "neut_percent__percent", "neut_percent_flagged",
-        "neut_number_109l", "neut_number_flagged", "lymph_percent__percent",
-        "lymph_percent_flagged", "lymph_number_109l", "lymph_number_flagged",
-        "mono_percent__percent", "mono_percent_flagged", "mono_number_109l",
-        "mono_number_flagged", "eos_percent__percent", "eos_percent_flagged",
-        "eos_number_109l", "eos_number_flagged", "baso_percent__percent",
-        "baso_percent_flagged", "baso_number_109l", "baso_number_flagged",
-        "flags", "reject_reason", "scan_date", "scan_time", "sample_mode",
-        "instrument_id", "scan_rev", "scan_tag", "export_rev", "config_rev",
-        "config_tag", "operator_id", "operator_name", "demographic", "qc_status",
-        "prover_complete"
-    ]
-
-    # Apply new column names (skipping the first column)
-    data.columns.values[1:len(new_colnames) + 1] = new_colnames
-
     return data
+
+
+
 
 # matching to REDcap
 def match_to_redcap(data_olo, api_token):
@@ -263,9 +226,11 @@ def reader_prep_csv(data_path, api_token):
 
     pass
 
-def testing_no_clean(data_path):
+def testing_no_clean(data_path, api_token):
     data_olo = read_convert(data_path)
     
-    write_to_csv(data_olo)
+    data_cleaned = clean_olo(data_olo, api_token)
+    
+    write_to_csv(data_cleaned)
     
     pass
