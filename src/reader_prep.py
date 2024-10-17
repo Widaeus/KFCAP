@@ -1,10 +1,9 @@
-# If you need to add more studies to the program, add the necessary code to clean_olo and match_to_redcap
-
 # Load dependencies
 import os
 import pandas as pd
 import utils
 from datetime import datetime
+import re
 
 # Import raw data
 def read_tabular_data(data_path):
@@ -122,11 +121,10 @@ def read_convert(data_path):
     return concatenated_data
 
 # cleaning and fitting
-def clean_olo(data, study):
-    # Check if the study argument is valid
-    if study not in ["mind", "scapis_spectrum"]:
-        raise ValueError("The study argument is not defined for this program.")
-
+def clean_olo(data, api_token):
+    # Fetch project info
+    project_info = utils.export_redcap_info(api_token)
+    
     # Remove tests (rows where 'sample_id' contains 'test', case-insensitive)
     data = data[~data['sample_id'].str.contains("test", case=False, na=False)]
 
@@ -140,7 +138,7 @@ def clean_olo(data, study):
     data = data[data['scan_time'].str.match(r"^\d{2}:\d{2}:\d{2}$", na=False)]
 
     # Convert columns to appropriate data types
-    data = data.apply(pd.to_numeric, errors='ignore')
+    data = data.apply(pd.to_numeric)
 
     # Function to count decimal places in a number
     def count_decimals(x):
@@ -169,11 +167,14 @@ def clean_olo(data, study):
     # Add a new column 'prover_complete' and set it to 1
     data['prover_complete'] = 1
 
+    # Check project title
+    project_title = project_info.get('project_title', '')
+    
     # Filter based on study
-    if study == "scapis_spectrum":
+    if project_title == 'SCAPIS2_Spectrum':
         data = data[~data['sample_id'].str.contains("MD", case=False, na=False)]
         data = data.rename(columns={'sample_id': 'scapisstudynr'})
-    elif study == "mind":
+    elif project_title == 'MIND':
         data = data[data['sample_id'].str.contains("MD", case=False, na=False)]
         data = data.rename(columns={'sample_id': 'studyid'})
         
@@ -202,16 +203,27 @@ def clean_olo(data, study):
     return data
 
 # matching to REDcap
-def match_to_redcap(data_olo, study, api_token=None):
+def match_to_redcap(data_olo, api_token):
 
     # Function to export REDCap data (this should be defined based on your API or database structure)
     data_redcap = utils.export_redcap_data(api_token)
+    project_info = utils.export_redcap_info(api_token)
+    
+    # Extract custom_record_label
+    custom_record_label = project_info.get('custom_record_label', '')
+
+    # Use regular expression to extract the part inside the brackets
+    match = re.search(r'\[(.*?)\]', custom_record_label)
+    if match:
+        project_record_label = match.group(1)
+    else:
+        project_record_label = None
+        
+    # Row labels
+    project_row_label = data_redcap.columns[0]
 
     # Perform a left join on the REDCap data based on study
-    if study == "scapis_spectrum":
-        data_ammended = pd.merge(data_olo, data_redcap[['scapisstudynr', study]], how='left', on='scapisstudynr')
-    elif study == "mind":
-        data_ammended = pd.merge(data_olo, data_redcap[['studyid', study]], how='left', on='studyid')
+    data_ammended = pd.merge(data_olo, data_redcap[[project_record_label, project_row_label]], how='left', on=project_record_label)
 
     return data_ammended
 
@@ -236,17 +248,24 @@ def write_to_csv(df):
     print(f"Data successfully exported to {file_path}")
     
 # Main function
-def reader_prep_csv(data_path, study, api_token=None):
+def reader_prep_csv(data_path, api_token):
     # Read and convert the data
     data_olo = read_convert(data_path)
 
     # Clean and fit the data
-    data_cleaned = clean_olo(data_olo, study)
+    data_cleaned = clean_olo(data_olo, api_token)
 
     # Match the data to REDCap
-    data_matched = match_to_redcap(data_cleaned, study, api_token)
+    data_matched = match_to_redcap(data_cleaned, api_token)
     
     # Write to csv
     write_to_csv(data_matched)
 
+    pass
+
+def testing_no_clean(data_path):
+    data_olo = read_convert(data_path)
+    
+    write_to_csv(data_olo)
+    
     pass

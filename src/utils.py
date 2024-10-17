@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import getpass
 
-def export_redcap_data(api_token=None):
+def export_redcap_data(api_token):
     """
     Exports REDCap data to a df.
 
@@ -17,10 +17,6 @@ def export_redcap_data(api_token=None):
     Example:
     export_redcap_data('your_api_token')
     """
-    # Prompt the user for the API key if not provided
-    if api_token is None:
-        api_token = getpass.getpass("Enter your REDCap API token: ")
-
     # Set up the parameters for the API request
     data = {
         'token': api_token,
@@ -38,7 +34,7 @@ def export_redcap_data(api_token=None):
     }
     
     # Make the API request
-    response = requests.post('https://redcap.ki.se/redcap/api/', data=data)
+    response = requests.post('https://redcap.ki.se/api/', data=data)
 
     # Check if the request was successful
     if response.status_code == 200:
@@ -53,7 +49,7 @@ def export_redcap_data(api_token=None):
 
     return df
     
-def import_redcap_data(file_path, api_token=None, write='normal'):
+def import_redcap_data(file_path, api_token, write='normal'):
     """
     Imports REDCap data from a CSV file to REDCap via API.
 
@@ -68,10 +64,6 @@ def import_redcap_data(file_path, api_token=None, write='normal'):
     Example:
     import_scapis_data('C:/path/to/your/csv_file.csv', 'your_api_token')
     """
-    # Prompt the user for the API key if not provided
-    if api_token is None:
-        api_token = getpass.getpass("Enter your REDCap API token: ")
-
     # Define the API URL
     api_url = 'https://redcap.ki.se/api/'
 
@@ -102,8 +94,7 @@ def import_redcap_data(file_path, api_token=None, write='normal'):
         print('Data import failed.')
         print('Response:', response.text)
         
-
-def export_redcap_info(api_token=None):
+def export_redcap_info(api_token):
     """
     Exports REDCap info and prints it.
 
@@ -115,10 +106,6 @@ def export_redcap_info(api_token=None):
     Example:
     export_redcap_info('your_api_token')
     """
-    # Prompt the user for the API key if not provided
-    if api_token is None:
-        api_token = getpass.getpass("Enter your REDCap API token: ")
-
     # Set up the parameters for the API request
     data = {
         'token': api_token,
@@ -133,12 +120,11 @@ def export_redcap_info(api_token=None):
     # Check if the request was successful
     if response.status_code == 200:
         print("Export successful")
+        try:
+            return response.json()  # Parse and return the response as a dictionary
+        except ValueError:
+            raise RuntimeError("Failed to parse JSON response from REDCap")
     else:
         print(f"Error: {response.status_code}")
         print(response.text)
-        return
-
-    # Convert the API response to a pandas DataFrame
-    print(response.json())
-
-    pass
+        return None
