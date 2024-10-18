@@ -1,11 +1,22 @@
+import os
 from reader_prep import reader_prep_csv
 from utils import export_redcap_data, export_redcap_info
 import getpass
+import pandas as pd
+from redcap.methods import records
 
-data_path = 'data/raw'
+# Define the URL and API token for your REDCap project
+REDCAP_API_URL = 'https://redcap.example.com/api/'
+API_TOKEN = 'your_api_token'
 
-# Prompt for the API token once
-api_token = getpass.getpass("Enter your REDCap API token: ")
+# Initialize the REDCap project
+project = Project(REDCAP_API_URL, API_TOKEN)
 
-# Pass the token to the functions that need it
-reader_prep_csv(data_path, api_token)
+# Export records
+records = project.export_records(format='json')
+
+# Convert the exported records to a DataFrame
+df = pd.DataFrame(records)
+
+# Display the DataFrame
+print(df)
