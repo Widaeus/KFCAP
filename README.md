@@ -7,12 +7,10 @@ It relies on PyCap for REDcap API integration.
 ## Features
 - Supports CSV and XLSX file formats
 - Utilizes REDCap API for data import
-- Error handling and validation
+- GUI for easier end-user interaction
 
 ## Requirements
-- Python 3.13
-- `pandas` library
-- `requests` library
+Please see the [requirements.txt](requirements.txt) file for a list of required libraries. For .exe creation PyInstaller is required.
 
 ## Installation
 1. Clone the repository:
@@ -25,32 +23,15 @@ It relies on PyCap for REDcap API integration.
   ```
 3. Install the required libraries:
   ```sh
-  pip install pandas requests
+  pip install -r requirements.txt
   ```
 
 ## Usage
-1. Prepare your CSV or XLSX file with the required data.
-2. Run the import function:
-  ```python
-  from kfcapimport import import_to_redcap
+For GUI:
+Create .exe file with PyInstaller or run main.py.
+GUI takes three inputs: data path to folder with files to be improted, REDcap API token and what form of data to be imported. As of version 1.0.0 only OLO blood sample data is supported.
 
-  file_path = 'path/to/your/file.csv'  # or 'file.xlsx'
-  api_url = 'https://redcap.yourinstitution.edu/api/'
-  api_token = 'YOUR_REDCAP_API_TOKEN'
-
-  import_to_redcap(file_path, api_url, api_token)
-  ```
-
-## Example
-```python
-from kfcapimport import import_to_redcap
-
-file_path = 'data/patient_data.csv'
-api_url = 'https://redcap.yourinstitution.edu/api/'
-api_token = 'YOUR_REDCAP_API_TOKEN'
-
-import_to_redcap(file_path, api_url, api_token)
-```
+Remember to keep API token safe and not share it or write it in code.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
