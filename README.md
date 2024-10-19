@@ -9,7 +9,7 @@ This project provides an import function that takes a file in CSV or XLSX format
 - Error handling and validation
 
 ## Requirements
-- Python 3.x
+- Python 3.13
 - `pandas` library
 - `requests` library
 
