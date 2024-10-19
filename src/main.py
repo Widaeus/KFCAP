@@ -3,6 +3,8 @@ from tkinter import filedialog, messagebox
 from reader_prep import import_data
 from redcap import Project
 
+ctk.set_appearance_mode("dark")  # Set the appearance mode to dark
+
 def define_url_token_project(api_token):
     api_url = 'https://redcap.ki.se/api/'
     project = Project(api_url, api_token)
@@ -43,7 +45,7 @@ def browse_files():
 
 # Create the main window
 root = ctk.CTk()
-root.title("Data Processor")
+root.title("Data import to REDcap")
 
 # Labels and entry fields
 label_data_path = ctk.CTkLabel(root, text="Data Path")
