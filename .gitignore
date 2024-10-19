@@ -11,3 +11,7 @@ __pycache__/
 
 # Ignore data files
 data/
+
+# Ignore executable creation files
+build/
+*.spec

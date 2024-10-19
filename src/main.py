@@ -43,9 +43,23 @@ def browse_files():
     entry_data_path.delete(0, ctk.END)
     entry_data_path.insert(0, filename)
 
+def center_window(root, width=500, height=300):
+    # Get screen width and height
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # Calculate x and y coordinates to position the window centrally
+    x = (screen_width // 2) - (width // 2)
+    y = (screen_height // 2) - (height // 2)
+
+    # Set the dimensions of the window and its position
+    root.geometry(f'{width}x{height}+{x}+{y}')
+
 # Create the main window
 root = ctk.CTk()
 root.title("Data import to REDcap")
+
+center_window(root, width=600, height=250)
 
 # Labels and entry fields
 label_data_path = ctk.CTkLabel(root, text="Data Path")
