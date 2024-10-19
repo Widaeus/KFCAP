@@ -15,3 +15,6 @@ data/
 # Ignore executable creation files
 build/
 *.spec
+
+# Ignore distribution files
+dist/
