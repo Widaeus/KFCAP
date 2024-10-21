@@ -1,4 +1,4 @@
-# KFCap Import Function
+# KFCap Import
 
 ## Overview
 This project provides an import function that takes a file in CSV or XLSX format and uses the REDCap API to import it into an electronic Case Report Form (eCRF) in REDCap. It further exposes this function as a GUI for easier end-user interaction.
