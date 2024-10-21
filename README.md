@@ -28,7 +28,7 @@ Please see the [requirements.txt](requirements.txt) file for a list of required 
 
 ## Usage
 For GUI:
-Create .exe file with PyInstaller or run main.py.
+Create .exe file with Pyinstaller using build.sh, or run main.py.
 GUI takes three inputs: data path to folder with files to be improted, REDcap API token and what form of data to be imported. As of version 1.0.0 only OLO blood sample data is supported.
 
 Remember to keep API token safe and not share it or write it in code.

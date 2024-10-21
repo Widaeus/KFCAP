@@ -18,3 +18,18 @@ build/
 
 # Ignore distribution files
 dist/
+
+# Ignore everything in the data folder
+data/*
+
+# Except the raw and processed subfolders
+!data/raw/
+!data/processed/
+
+# Ignore everything inside raw and processed subfolders
+data/raw/*
+data/processed/*
+
+# Ensure the subfolders themselves are kept, even if empty
+!data/raw/.gitkeep
+!data/processed/.gitkeep
