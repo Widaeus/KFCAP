@@ -1,9 +1,12 @@
 # Ignore virtual environments
 KFC/
+venv/
+KFC/Lib/
 
 # Ignore Python cache files
 __pycache__/
 *.py[cod]
+*.pyo
 
 # Ignore IDE files
 .vscode/
@@ -11,6 +14,12 @@ __pycache__/
 
 # Ignore data files
 data/
+!data/raw/
+!data/processed/
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 
 # Ignore executable creation files
 build/
@@ -18,18 +27,8 @@ build/
 
 # Ignore distribution files
 dist/
+*.egg-info/
 
-# Ignore everything in the data folder
-data/*
-
-# Except the raw and processed subfolders
-!data/raw/
-!data/processed/
-
-# Ignore everything inside raw and processed subfolders
-data/raw/*
-data/processed/*
-
-# Ensure the subfolders themselves are kept, even if empty
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
