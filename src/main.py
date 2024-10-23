@@ -31,8 +31,8 @@ def run_process():
     try:
       if data_form == "OLO data":
         # Convert and clean data
-        sample_ids = import_data(data_path, project)
-        messagebox.showinfo("Success", f"The following IDs were successfully imported: {', '.join(sample_ids)}")
+        second_column = import_data(data_path, project)
+        messagebox.showinfo("Success", f"The following IDs were successfully imported: {', '.join(second_column)}")
       else:
          raise ValueError(f"Data form {data_form} is not supported as of this moment.")
     except Exception as e:
@@ -88,5 +88,5 @@ combo_data_form.set("Select Data Form")  # Set default value
 button_submit = ctk.CTkButton(root, text="Run", command=run_process)
 button_submit.grid(row=3, column=1, padx=10, pady=10)
 
-# Run the main loop
-root.mainloop()
+if __name__ == "__main__":
+    root.mainloop()

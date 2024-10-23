@@ -4,8 +4,19 @@ import pandas as pd
 from datetime import datetime
 import re
 
-# Import raw data
 def read_tabular_data(data_path):
+    """
+    Reads tabular data from a given file path.
+    
+    Parameters:
+    data_path (str): The path to the data file. Supported formats are .csv and .xlsx.
+    
+    Returns:
+    DataFrame: A pandas DataFrame containing the data.
+    
+    Raises:
+    ValueError: If the file format is not supported.
+    """
     if data_path.endswith('.csv'):
       df = pd.read_csv(data_path)
     elif data_path.endswith('.xlsx'):
@@ -14,8 +25,16 @@ def read_tabular_data(data_path):
       raise ValueError("Unsupported file format")
     return df
 
-# Conversion for OLO data
 def convert_units_OLO(df):
+    """
+    Converts units for OLO data in the given DataFrame.
+    
+    Parameters:
+    df (DataFrame): The pandas DataFrame containing OLO data.
+    
+    Returns:
+    DataFrame: The DataFrame with converted units.
+    """
     # Convert "hgb [mmol/L]" to "hgb [g/L]"
     if "hgb [mmol/L]" in df.columns:
         df["hgb [mmol/L]"] = pd.to_numeric(df["hgb [mmol/L]"], errors='coerce')
@@ -99,8 +118,17 @@ def convert_units_OLO(df):
     
     return df
 
-# Read_convert function for OLO data
 def read_convert(data_path):
+    """
+    Reads and converts OLO data from a given file path.
+    Relies on convert_units_OLO in module reader_prep.
+    
+    Parameters:
+    data_path (str): The path to the OLO data file.
+    
+    Returns:
+    DataFrame: A pandas DataFrame containing the converted OLO data.
+    """
     # Create a list of file paths for all .csv and .xlsx files in the specified directory
     file_list = [os.path.join(data_path, f) for f in os.listdir(data_path) if f.endswith(('.csv', '.xlsx'))]
     
@@ -135,8 +163,18 @@ def read_convert(data_path):
     
     return concatenated_data
 
-# Cleaning and fitting for OLO data
 def clean_olo(data, project):
+    """
+    Cleans and fits OLO data for a given project.
+    Assumes that REDcap has the appropriate column names for OLO data.
+    
+    Parameters:
+    data (DataFrame): The pandas DataFrame containing OLO data.
+    project (str): The project identifier, from PyCap.
+    
+    Returns:
+    DataFrame: The cleaned and fitted OLO data.
+    """
     # Fetch project info
     project_info = project.export_project_info()
     
@@ -207,9 +245,17 @@ def clean_olo(data, project):
 
     return data
 
-# Matching to REDcap
 def match_to_redcap(data_olo, project):
-
+    """
+    Matches OLO data to REDcap for a given project.
+    
+    Parameters:
+    data_olo (DataFrame): The pandas DataFrame containing OLO data.
+    project (str): The project identifier.
+    
+    Returns:
+    DataFrame: The matched data.
+    """
     # Using PyCap to export records and project info
     data_redcap = project.export_records(format_type='df')
     project_info = project.export_project_info()
@@ -251,10 +297,25 @@ def match_to_redcap(data_olo, project):
     # Remove rows where the left join did not find a match
     data_ammended = data_ammended.dropna(subset=[index_name])
     
+    # Remove the sample_id column
+    data_ammended = data_ammended.drop(columns=['sample_id'])
+    
+    # Reorder columns to have index_name first, then project_record_label, then the rest
+    cols = [index_name, project_record_label] + [col for col in data_ammended.columns if col not in [index_name, project_record_label]]
+    data_ammended = data_ammended[cols]
+
     return data_ammended
 
-# writing to csv
 def write_to_csv(df):
+    """
+    Writes the given DataFrame to a CSV file.
+    
+    Parameters:
+    df (DataFrame): The pandas DataFrame to write to CSV.
+    
+    Returns:
+    None
+    """
     # Construct the path to the 'data' folder
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current script's directory
     data_folder = os.path.join(script_dir, '..', 'data', 'processed')     # Navigate to the processed data folder
@@ -273,8 +334,17 @@ def write_to_csv(df):
 
     print(f"Data successfully exported to {file_path}")
     
-# Main function
 def import_data(data_path, project):
+    """
+    Main function to import data for a given project.
+    
+    Parameters:
+    data_path (str): The path to the data file.
+    project (str): The project identifier.
+    
+    Returns:
+    None
+    """
     # Read and convert the data
     data_olo = read_convert(data_path)
 
@@ -287,4 +357,6 @@ def import_data(data_path, project):
     # Import the data to REDcap
     project.import_records(data_matched, import_format='df')
     
-    return data_matched['sample_id'].tolist()
+    # Return the values from the second column
+    second_column_name = data_matched.columns[1]
+    return data_matched[second_column_name].tolist()
