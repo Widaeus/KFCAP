@@ -1,12 +1,12 @@
 # KFCAP
 
 ## Overview
-This project facilitates the import and viewing of REDCap projects within Kliniskt Forskningscentrum at Danderyd Hospital.
-<div style="margin-top: 20px;"></div>
+This project facilitates the import and viewing of REDCap projects within Kliniskt Forskningscentrum at Danderyd Hospital. \
+\
 The import functionality supports CSV and XLSX file formats, leveraging the REDCap API to import data into an electronic Case Report Form (eCRF) in REDCap. Additionally, it provides a user-friendly GUI for easier interaction.
-It extensively uses **PyCap** for REDCap API integration.
-<div style="margin-top: 20px;"></div>
-The alert handling feature, as of version `1.0.2`, is currently available for the "SCAPIS2spectrum" and "MIND" studies. It utilizes a modified version of PyCap to check alert parameters, identify study records that triggered alerts, and present them in the GUI for an overview.
+It extensively uses **PyCap** for REDCap API integration.\
+\
+The alert handling feature, as of version `1.0.2` is currently available for the "SCAPIS2spectrum" and "MIND" studies. It utilizes a modified version of PyCap to check alert parameters, identify study records that triggered alerts, and present them in the GUI for an overview.
 
 ## Features
 - Import
