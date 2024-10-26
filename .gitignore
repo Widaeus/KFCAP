@@ -32,3 +32,6 @@ dist/
 # Ignore OS-generated files
 .DS_Store
 Thumbs.db
+
+# Ignore readme cache files
+/README_files

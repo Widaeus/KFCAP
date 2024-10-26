@@ -2,28 +2,32 @@
 
 ## Table of Contents
 1. [Basic Usage](#basic-usage)
-2. [GUI](#GUI)
 3. [Configuration](#configuration)
 4. [Troubleshooting](#troubleshooting)
 
-## Basic usage
-The KFCAPImport tool is a GUI guided tool that can be used to import data from a CSV or XLSX file into a REDCap project. The tool requires a REDCap API token, a folder of data files, and a data form type as input. The data file should be in CSV or XLSX format and should contain the data to be imported into REDCap.
+### Basic Usage
+The KFCAP import tool includes a GUI to import data from a CSV or XLSX file into a REDCap project at Kliniskt Forskningscentrum. The tool requires three inputs:
+1. **Data path**: Path to the folder containing the data files for import.
+2. **REDCap API token**: The API token for the specified REDCap project. Ensure the token is kept secure.
+3. **Data form type**: The type of data to import (currently supports only OLO blood sample data).
+<div style="margin-top: 20px;"></div>
+The KFCAP alert handling tool takes a API token from REDCap project and outputs a list of all defined alert variables with the deviating values in **<span style="color:red;">red and bold</span>**. It features a scroll-like function to cycle through all the study ids with deviating values.
 
-## GUI
-The GUI is a simple interface that guides the user through the process of importing data into REDCap. It runs from main.py or from the .exe created by build.sh.
+### Running the Application
+You can run the application through the GUI by:
+- **Creating an .exe file** using `PyInstaller` and `build.sh`, or
+- Directly executing `main.py` from the command line:
+  ```sh
+  python main.py
+  ```
 
-The GUI requires the following inputs:
-- Data path: The path to the folder containing the data files to be imported.
-- REDCap API token: The API token for the REDCap project.
-- Data form type: The type of data form to be imported. As of version 1.0.0, only OLO blood sample data is supported.
-
-Remember to keep the API token safe and not share it or write it in code.
-
-## Configuration
-When running the .exe all dependencies are included in the build. If running from main.py, the required libraries can be installed using the following command:
+### Configuration
+All necessary dependencies are included when running the .exe. If running from `main.py`, ensure required libraries are installed by running:
 ```sh
 pip install -r requirements.txt
 ```
 
-## Troubleshooting
-If you encounter issues, the main reading, converting and modifying code is found in src/reader_prep.py. The REDcap API OOP code is found in src/redcap.
+### Troubleshooting
+For any issues, refer to the core processing scripts:
+- **Data reading and preparation**: `src/reader_prep.py`
+- **REDCap API management**: `src/redcap.py`
