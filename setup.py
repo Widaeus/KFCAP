@@ -5,14 +5,14 @@ with open("version.txt") as version_file:
     version = version_file.read().strip()
 
 setup(
-    name="KFCAPImport",
+    name="KFCAP",
     version=version,
     author="Jacob Widaeus",
     author_email="jacob.widaeus@ki.se",
-    description="A tool to import data to REDCap",
+    description="A tool to import and view REDcap data",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/widaeus/KFCAPImport",
+    url="https://github.com/widaeus/KFCAP",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
