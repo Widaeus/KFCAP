@@ -7,12 +7,17 @@ import pandas as pd
 
 ctk.set_appearance_mode("dark")  # Set the appearance mode to dark
 
-def center_window(root, width=500, height=300):
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    x = (screen_width - width) // 2
-    y = (screen_height - height) // 2
-    root.geometry(f'{width}x{height}+{x}+{y}')
+def validate_api_token(api_token, label_validation):
+    if len(api_token) < 32:  # Assuming a valid API token has at least 32 characters
+        label_validation.configure(text="Invalid token", text_color="red")
+    else:
+        try:
+            project = define_url_token_project(api_token)
+            project_info = project.export_project_info()
+            project_title = project_info.get('project_title', 'Unknown Project')
+            label_validation.configure(text=f"Valid token: {project_title}", text_color="green")
+        except Exception as e:
+            label_validation.configure(text="Invalid token", text_color="red")
 
 def define_url_token_project(api_token):
     api_url = 'https://redcap.ki.se/api/'
@@ -58,37 +63,66 @@ def clear_window():
 
 def show_main_menu():
     clear_window()
-    frame = ctk.CTkFrame(root)
-    frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
+    frame = ctk.CTkFrame(root)
+    frame.grid(row=0, column=0, sticky="nsew")
+
+    # Configure the root window and main frame to expand
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
-    
-    frame.grid_rowconfigure(0, weight=1)
-    frame.grid_rowconfigure(1, weight=1)
-    frame.grid_rowconfigure(2, weight=1)
+
+    # Configure rows and columns in the main frame
+    frame.grid_rowconfigure(0, weight=1)  # Title row
+    frame.grid_rowconfigure(1, weight=0)  # Subtitle row
+    frame.grid_rowconfigure(2, weight=1)  # Button frame row
     frame.grid_columnconfigure(0, weight=1)
+    frame.grid_columnconfigure(1, weight=1)
+    frame.grid_columnconfigure(2, weight=1)
 
+    # Title
+    label_title = ctk.CTkLabel(
+        frame, 
+        text="KFCAP - REDCap tool for KFC", 
+        font=("Arial", 20, "bold")
+    )
+    label_title.grid(row=0, column=0, columnspan=3, padx=10, pady=(20, 10), sticky="n")
+
+    # Subtitle
+    label_subtitle = ctk.CTkLabel(
+        frame, 
+        text="Welcome to the REDCap tool designed for KFC research studies. Please read the description before use.", 
+        font=("Arial", 12)
+    )
+    label_subtitle.grid(row=1, column=0, columnspan=3, padx=10, pady=(0, 20), sticky="n")
+
+    # Place the button_frame in the center cell
     button_frame = ctk.CTkFrame(frame)
-    button_frame.grid(row=1, column=0)
-    button_frame.grid_columnconfigure(0, weight=1)
-    button_frame.grid_columnconfigure(2, weight=1)
+    button_frame.grid(row=2, column=1, pady=20)
 
-    button_data_import = ctk.CTkButton(button_frame, text="Data import", command=show_data_import)
-    button_data_import.grid(row=0, column=1, padx=10, pady=10)
+    # Configure button_frame columns
+    button_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-    button_alert_handling = ctk.CTkButton(button_frame, text="Alert handling", command=show_alert_handling)
-    button_alert_handling.grid(row=0, column=2, padx=10, pady=10)
+    # Add buttons to button_frame
+    button_data_import = ctk.CTkButton(
+        button_frame, text="Data import", command=show_data_import
+    )
+    button_data_import.grid(row=0, column=0, padx=10, pady=10)
+
+    button_alert_handling = ctk.CTkButton(
+        button_frame, text="Alert handling", command=show_alert_handling
+    )
+    button_alert_handling.grid(row=0, column=1, padx=10, pady=10)
+
+    button_letter_generation = ctk.CTkButton(
+        button_frame, text="Survey to letter", command=show_letter_generation
+    )
+    button_letter_generation.grid(row=0, column=2, padx=10, pady=10)
 
 def show_data_import():
     clear_window()
     
     frame = ctk.CTkFrame(root)
     frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-    
-    root.grid_rowconfigure(0, weight=1)
-    root.grid_columnconfigure(0, weight=1)
-    frame.grid_columnconfigure(1, weight=1)
 
     # Data Path
     label_data_path = ctk.CTkLabel(frame, text="Data Path")
@@ -107,6 +141,11 @@ def show_data_import():
 
     entry_api_token = ctk.CTkEntry(frame, width=300, show='*')
     entry_api_token.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+    
+    label_validation = ctk.CTkLabel(frame, text="")
+    label_validation.grid(row=1, column=2, padx=10, pady=10, sticky="w")
+
+    entry_api_token.bind("<KeyRelease>", lambda event: validate_api_token(entry_api_token.get(), label_validation))
 
     # Data Form Selection
     label_data_form = ctk.CTkLabel(frame, text="Data Form")
@@ -115,10 +154,18 @@ def show_data_import():
     combo_data_form = ctk.CTkComboBox(frame, values=["OLO data", "Echocardiographic data"], width=300)
     combo_data_form.grid(row=2, column=1, padx=10, pady=10, sticky="w")
     combo_data_form.set("Select Data Form")
-
-    button_back = ctk.CTkButton(frame, text="Back", command=show_main_menu)
-    button_back.grid(row=3, column=1, padx=10, pady=(20, 10), sticky="e")
     
+    # Frame for buttons
+    button_frame = ctk.CTkFrame(frame)
+    button_frame.grid(row=3, column=0, columnspan=3, pady=20)
+
+    # Run button
+    button_run = ctk.CTkButton(button_frame, text="Import", command=run_process)
+    button_run.pack(side="left", padx=10)
+
+    # Back button
+    button_back = ctk.CTkButton(button_frame, text="Back", command=show_main_menu)
+    button_back.pack(side="left", padx=10)
 
     frame.grid_rowconfigure(4, weight=1)
 
@@ -127,8 +174,6 @@ def show_alert_handling():
     frame = ctk.CTkFrame(root)
     frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
     
-    root.grid_rowconfigure(0, weight=1)
-    root.grid_columnconfigure(0, weight=1)
     frame.grid_columnconfigure(1, weight=1)
     
     # Title
@@ -136,7 +181,11 @@ def show_alert_handling():
     label_title.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
     # Subtitle
-    label_subtitle = ctk.CTkLabel(frame, text="As of this version only compatible with studies SCAPIS2spectrum and MIND", font=("Arial", 12))
+    label_subtitle = ctk.CTkLabel(
+        frame, 
+        text="As of this version only compatible with studies SCAPIS2spectrum and MIND", 
+        font=("Arial", 12)
+    )
     label_subtitle.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
     # API token
@@ -146,10 +195,131 @@ def show_alert_handling():
     entry_api_token = ctk.CTkEntry(frame, width=300, show='*')
     entry_api_token.grid(row=2, column=1, padx=10, pady=10, sticky="w")
     
-    # Run button to initiate alert checking
-    button_run = ctk.CTkButton(frame, text="Run", command=lambda: display_alerts_window(define_url_token_project(entry_api_token.get())))
-    button_run.grid(row=3, column=1, padx=10, pady=20)
+    label_validation = ctk.CTkLabel(frame, text="")
+    label_validation.grid(row=2, column=2, padx=10, pady=10, sticky="w")
+
+    entry_api_token.bind(
+        "<KeyRelease>", 
+        lambda event: validate_api_token(entry_api_token.get(), label_validation)
+    )
     
+    # Frame for buttons
+    button_frame = ctk.CTkFrame(frame)
+    button_frame.grid(row=3, column=0, columnspan=3, pady=20)
+
+    # Run button
+    button_run = ctk.CTkButton(
+        button_frame, 
+        text="Run", 
+        command=lambda: display_alerts_window(
+            define_url_token_project(entry_api_token.get())
+        )
+    )
+    button_run.pack(side="left", padx=10)
+
+    # Back button
+    button_back = ctk.CTkButton(button_frame, text="Back", command=show_main_menu)
+    button_back.pack(side="left", padx=10)
+
+def show_letter_generation():
+    clear_window()
+    
+    # Create and grid the main frame with reduced padding
+    frame = ctk.CTkFrame(root)
+    frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+    
+    # Configure grid weights to prevent excessive expansion
+    frame.grid_columnconfigure(0, weight=0)
+    frame.grid_columnconfigure(1, weight=1)
+    frame.grid_columnconfigure(2, weight=0)
+    
+    # Title
+    label_title = ctk.CTkLabel(frame, text="Letter Generation", font=("Arial", 16, "bold"))
+    label_title.grid(row=0, column=0, columnspan=3, padx=5, pady=(5, 10), sticky="ew")
+
+    # Subtitle
+    label_subtitle = ctk.CTkLabel(
+        frame, 
+        text="Generate letters for studies SCAPIS2spectrum and MIND", 
+        font=("Arial", 12)
+    )
+    label_subtitle.grid(row=1, column=0, columnspan=3, padx=5, pady=(0, 10), sticky="ew")
+
+    # API token
+    label_api_token = ctk.CTkLabel(frame, text="API Token")
+    label_api_token.grid(row=2, column=0, padx=5, pady=5, sticky="e")
+
+    entry_api_token = ctk.CTkEntry(frame, width=200, show='*')
+    entry_api_token.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+
+    label_validation = ctk.CTkLabel(frame, text="", text_color="red")
+    label_validation.grid(row=2, column=2, padx=5, pady=5, sticky="w")
+
+    entry_api_token.bind(
+        "<KeyRelease>", 
+        lambda event: validate_api_token(entry_api_token.get(), label_validation)
+    )
+    
+    # File browse for letter template
+    label_letter_template = ctk.CTkLabel(frame, text="Letter Template File")
+    label_letter_template.grid(row=3, column=0, padx=5, pady=5, sticky="e")
+
+    entry_letter_template = ctk.CTkEntry(frame, width=200)
+    entry_letter_template.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+
+    def browse_letter_template():
+        file_path = filedialog.askopenfilename(
+            filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
+        )
+        if file_path:
+            entry_letter_template.delete(0, ctk.END)
+            entry_letter_template.insert(0, file_path)
+
+    button_browse_letter_template = ctk.CTkButton(
+        frame, 
+        text="Browse", 
+        command=browse_letter_template
+    )
+    button_browse_letter_template.grid(row=3, column=2, padx=5, pady=5, sticky="w")
+
+    # File browse for key
+    label_key = ctk.CTkLabel(frame, text="Key File")
+    label_key.grid(row=4, column=0, padx=5, pady=5, sticky="e")
+
+    entry_key = ctk.CTkEntry(frame, width=200)
+    entry_key.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+
+    def browse_key_file():
+        file_path = filedialog.askopenfilename(
+            filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
+        )
+        if file_path:
+            entry_key.delete(0, ctk.END)
+            entry_key.insert(0, file_path)
+
+    button_browse_key = ctk.CTkButton(
+        frame, 
+        text="Browse", 
+        command=browse_key_file
+    )
+    button_browse_key.grid(row=4, column=2, padx=5, pady=5, sticky="w")
+    
+    # Run button to initiate letter generation
+    button_run = ctk.CTkButton(
+        frame, 
+        text="Run", 
+        command=lambda: generate_letters(
+            entry_api_token.get(), 
+            entry_letter_template.get(), 
+            entry_key.get()
+        )
+    )
+    button_run.grid(row=5, column=1, padx=5, pady=10, sticky="e")
+    
+    # Back button
+    button_back = ctk.CTkButton(frame, text="Back", command=show_main_menu)
+    button_back.grid(row=5, column=2, padx=5, pady=10, sticky="w")
+
 def display_alerts_window(project):
     deviating_ids, deviations = find_deviating_records(project)
     data_redcap = project.export_records(format_type='df')
@@ -266,9 +436,20 @@ def display_alerts_window(project):
 
 # Create the main window
 root = ctk.CTk()
-root.title("KFCap")
+root.title("KFCap v1.0.2")
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 300
+root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
-center_window(root, width=600, height=250)
+# Center the root window on the screen
+def center_window(win, width, height):
+    screen_width = win.winfo_screenwidth()
+    screen_height = win.winfo_screenheight()
+    x = int((screen_width / 2) - (width / 2))
+    y = int((screen_height / 2) - (height / 2))
+    win.geometry(f"{width}x{height}+{x}+{y}")
+
+center_window(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
 
 show_main_menu()
 
