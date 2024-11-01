@@ -3,7 +3,7 @@ from src.utils.utils import clear_window
 
 def show_main_menu(root):
     from src.windows.data_import import show_data_import
-    from src.windows.alert_handling import show_alert_handling
+    from src.windows.alert_window import show_alert_handling
     from src.windows.letter_generation import show_letter_generation
     
     clear_window(root)

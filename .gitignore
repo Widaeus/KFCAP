@@ -24,6 +24,8 @@ data/processed/*
 # Ignore executable creation files
 build/
 *.spec
+pyinstaller_version.txt
+readme.html
 
 # Ignore distribution files
 dist/
