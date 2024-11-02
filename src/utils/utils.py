@@ -7,7 +7,7 @@ from src.utils.alert_handling import find_study_id, find_deviating_records, load
 entry_data_path = None
 
 def validate_api_token(api_token, label_validation):
-    if len(api_token) < 32:  # Assuming a valid API token has at least 32 characters
+    if len(api_token) < 32:
         label_validation.configure(text="Invalid token", text_color="red")
     else:
         try:
@@ -15,8 +15,10 @@ def validate_api_token(api_token, label_validation):
             project_info = project.export_project_info()
             project_title = project_info.get('project_title', 'Unknown Project')
             label_validation.configure(text=f"Valid token: {project_title}", text_color="green")
+            return True
         except Exception as e:
             label_validation.configure(text="Invalid token", text_color="red")
+            return False
 
 def define_url_token_project(api_token):
     api_url = 'https://redcap.ki.se/api/'

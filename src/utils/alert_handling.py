@@ -1,42 +1,82 @@
 import pandas as pd
 from typing import List, Dict
 import re
+from src.models.alert import Alert
+from src.models.session_manager import session_manager
+from src.utils.parsing import parse_conditions
 
-def load_csv(filepath: str) -> pd.DataFrame:
-    return pd.read_csv(filepath)
 
-def parse_condition(condition: str) -> str:
-    """Convert alert condition format to Python-evaluable expression."""
-    condition = re.sub(r'\[([^\]]+)\]', r'row["\1"]', condition)
-    condition = re.sub(r'(?<![><!])(?<![=])=(?!=)', '==', condition)
-    condition = condition.replace("<>", "!=")
-    condition = re.sub(r'row\["([^"]+)"\]\s*!=\s*""', r'pd.notna(row["\1"])', condition)
-    condition = re.sub(r'row\["([^"]+)"\]\s*==\s*""', r'pd.isna(row["\1"])', condition)
-    condition = condition.strip()
-    return condition
+def create_alerts_from_dataframe(df: pd.DataFrame, project_instance) -> List[Alert]:
+    """Create a list of Alert instances from a DataFrame of alert specifications."""
+    all_alerts = []
 
-def check_deviations(row: pd.Series, conditions: List[str]) -> Dict[str, Dict]:
+    for _, row in df.iterrows():
+        title = row['alert-title']
+        condition_str = row['alert-condition']
+        active = row['alert-deactivated'] == "N"
+
+        parsed_conditions = parse_conditions(condition_str)
+        
+        # Create the alert dictionary
+        alert_dict = {}
+        for variable, details in parsed_conditions.items():
+            alert_dict[variable] = {
+                "condition": details["conditions"],
+                "reference_interval": details.get("reference_interval")
+            }
+
+        # Add the alert to the project and collect in the list
+        project_instance.add_alert(title, alert_dict, active)
+        all_alerts.append(Alert(title, alert_dict, active))
+
+    return all_alerts
+
+def check_deviations(df: pd.DataFrame, project_instance) -> Dict[str, Dict]:
     """Identify variables and their deviation status based on dynamic conditions."""
     deviating_vars = {}
+    study_id = find_study_id(project_instance)  # Obtain the record identifier field
 
-    for condition in conditions:
-        # Parse each condition to convert to Python-evaluable syntax
-        parsed_condition = parse_condition(condition)
-        try:
-            # Evaluate the parsed condition
-            if eval(parsed_condition, {"row": row.to_dict(), "pd": pd, "abs": abs}):
-                # Extract variable names from the condition to specify which variable deviates
-                variables = re.findall(r'row\["([^"]+)"\]', parsed_condition)
-                for var in variables:
-                    # Store deviation details only if the variable isn't already recorded
-                    if var not in deviating_vars:
-                        deviating_vars[var] = {
-                            "condition": condition,
-                            "value": row[var]
-                        }
-        except Exception as e:
-            print(f"Error evaluating condition: {condition}\nError: {e}")
-    
+    for _, row in df.iterrows():
+        row_deviations = {}
+
+        for alert in project_instance.alerts:
+            for variable, details in alert.alert_dict.items():
+                condition = details["condition"]
+                reference_interval = details.get("reference_interval")
+
+                # Parse the condition string
+                conditions = condition.split(', ')
+                eval_conditions = []
+                for cond in conditions:
+                    if 'not empty' in cond:
+                        eval_conditions.append(f"row['{variable}'] == ''")
+                    elif '<' in cond:
+                        threshold = cond.split('<')[1].strip()
+                        eval_conditions.append(f"row['{variable}'] < {threshold}")
+                    elif '>' in cond:
+                        threshold = cond.split('>')[1].strip()
+                        eval_conditions.append(f"row['{variable}'] > {threshold}")
+
+                # Combine the conditions with 'or'
+                parsed_condition = ' or '.join(eval_conditions)
+
+                try:
+                    # Evaluate the parsed condition
+                    if eval(parsed_condition, {"row": row.to_dict(), "pd": pd, "abs": abs}):
+                        # Store deviation details only if the variable isn't already recorded
+                        if variable not in row_deviations:
+                            row_deviations[variable] = {
+                                "condition": condition,
+                                "reference_interval": reference_interval,
+                                "value": float(row[variable]),  # Convert to standard Python float
+                                "study_id": str(row[study_id])  # Ensure study_id is a string
+                            }
+                except Exception as e:
+                    print(f"Error evaluating condition: {condition}\nError: {e}")
+
+        if row_deviations:
+            deviating_vars[str(row[study_id])] = row_deviations  # Use record_id as key
+
     return deviating_vars
 
 def find_study_id(project):
@@ -48,17 +88,6 @@ def find_study_id(project):
         return match.group(1)
     return None
 
-def find_deviating_records(project, alert_conditions: List[str]):
-    """Find records and collect variable info including deviation status."""
-    records_info = {}
-    study_id = find_study_id(project)  # Obtain the record identifier field
-    data_redcap = project.export_records(format_type='df')  # Export data as DataFrame
-
-    for _, row in data_redcap.iterrows():
-        # Check deviations for the current row
-        variable_info = check_deviations(row, alert_conditions)
-        if variable_info:  # Only include records with deviations
-            study_id_value = row[study_id]  # Extract the record ID for this row
-            records_info[study_id_value] = variable_info  # Associate deviations with the record ID
-    
-    return records_info
+def load_csv(filepath: str) -> pd.DataFrame:
+    df = pd.read_csv(filepath)
+    return df

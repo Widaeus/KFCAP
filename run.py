@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 # Run the main application
-from GUI.main import main
+from src.GUI.main import main
 
 if __name__ == "__main__":
     main()
