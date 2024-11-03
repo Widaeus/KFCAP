@@ -50,3 +50,5 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ## Contact
 For questions or support, please contact [jacob.widaeus@ki.se](mailto:jacob.widaeus@ki.se).
+
+[![Python Tests](https://github.com/Widaeus/KFCAP/actions/workflows/python_tests.yml/badge.svg)](https://github.com/Widaeus/KFCAP/actions/workflows/python_tests.yml)
