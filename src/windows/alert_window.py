@@ -1,8 +1,9 @@
 import customtkinter as ctk
 import tkinter as tk
-from src.utils.utils import clear_window, display_alerts_window, browse_files
-from src.utils.alert_handling import load_csv, check_deviations, create_alerts_from_dataframe
+from src.utils.utils import clear_window, browse_files, load_csv
+from src.utils.parser import alerts_from_df_revised, check_deviations_revised
 from src.models.session_manager import session_manager
+from src.windows.alert_popup import display_alerts_popup
 
 def show_alert_handling(root):
     from src.windows.main_menu import show_main_menu
@@ -79,10 +80,10 @@ def show_alert_handling(root):
         
         filtered_alerts_df = csv_df[csv_df['alert-title'].isin(selected_alerts)]
         
-        alerts = create_alerts_from_dataframe(filtered_alerts_df, project_instance)
-        deviating_vars = check_deviations(redcap_data, project_instance)
+        alerts = alerts_from_df_revised(filtered_alerts_df, project_instance)
+        deviating_vars = check_deviations_revised(redcap_data, project_instance)
         
-        display_alerts_window(deviating_vars, alerts, redcap_data, project_instance, root)
+        display_alerts_popup(deviating_vars, alerts, redcap_data, project_instance, root)
 
     button_run = ctk.CTkButton(
         button_frame, 
