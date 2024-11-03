@@ -2,7 +2,9 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from src.redcap.project import Project
 import pandas as pd
-from src.utils.alert_handling import find_study_id, check_deviations, load_csv
+from src.utils.alert_handling import find_study_id
+from src.models.session_manager import session_manager
+from src.utils.reader_prep import import_data
 
 entry_data_path = None
 
@@ -30,19 +32,20 @@ def browse_files(entry_widget):
     entry_widget.delete(0, ctk.END)
     entry_widget.insert(0, filename)
 
-def run_process(entry_data_path, entry_api_token, combo_data_form):
+def run_process(entry_data_path, combo_data_form):
     # Get the inputs from the GUI
     data_path = entry_data_path.get()
-    api_token = entry_api_token.get()
     data_form = combo_data_form.get()  
 
-    if not data_path or not api_token or not data_form:
+    if not data_path or not data_form:
         messagebox.showerror("Error", "All fields must be filled in.")
         return
 
-    # Define REDCap project
+    cached_api_token = session_manager.get_api_token()
+
     try:
-        project = define_url_token_project(api_token)
+        if cached_api_token:
+            project_instance = session_manager.get_project_instance()
     except Exception as e:
         messagebox.showerror("Error", f"Failed to connect to REDCap: {e}")
         return
@@ -51,7 +54,7 @@ def run_process(entry_data_path, entry_api_token, combo_data_form):
     try:
         if data_form == "OLO data":
             # Convert and clean data
-            second_column = import_data(data_path, project)
+            second_column = import_data(data_path, project_instance)
             messagebox.showinfo("Success", f"The following IDs were successfully imported: {', '.join(second_column)}")
         else:
             raise ValueError(f"Data form {data_form} is not supported as of this moment.")
@@ -61,11 +64,6 @@ def run_process(entry_data_path, entry_api_token, combo_data_form):
 def clear_window(root):
     for widget in root.winfo_children():
         widget.destroy()
-
-
-
-
-
 
 def display_alerts_window(deviating_vars, alerts, redcap_data, project_instance, root):
     study_ids = sorted(deviating_vars.keys())
@@ -180,10 +178,6 @@ def display_alerts_window(deviating_vars, alerts, redcap_data, project_instance,
 
     # Initial display
     update_display()
-
-
-
-
 
 def center_window(win, width, height):
     screen_width = win.winfo_screenwidth()
