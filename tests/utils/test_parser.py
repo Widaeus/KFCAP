@@ -4,6 +4,7 @@ import pandas as pd
 from unittest.mock import Mock
 from src.utils.alert_handling import create_alerts_from_dataframe
 
+
 def test_parse_conditions():
     condition_str = '''
         ([wbc_109l] <> "" and ([wbc_109l] < 3.5 or [wbc_109l] > 12)) or
@@ -31,7 +32,33 @@ def test_parse_conditions():
 
     output = parse_conditions(condition_str)
     assert output == expected_output, f"Expected {expected_output}, but got {output}"
-    
+
+
+def test_parse_conditions2():
+    condition_str = '''(([bp_right_sys] <> "" and ([bp_right_sys] < 80 or [bp_right_sys] > 180)) or
+        ([bp_left_sys] <> "" and ([bp_left_sys] < 80 or [bp_left_sys] > 180)) or
+        ([bp_right_dia] <> "" and ([bp_right_dia] < 50 or [bp_right_dia] > 110)) or
+        ([bp_left_dia] <> "" and ([bp_left_dia] < 50 or [bp_left_dia] > 110)) or
+        ([pulse_right] <> "" and ([pulse_right] < 40 or [pulse_right] > 120)) or
+        ([pulse_left] <> "" and ([pulse_left] < 40 or [pulse_left] > 120)) or
+        (abs([bp_right_sys] - [bp_left_sys]) > 20) or
+        (abs([bp_right_dia] - [bp_left_dia]) > 10))'''
+
+    expected_output = {
+        "bp_right_sys": {"conditions": 'not empty, < 80, > 180', "reference_interval": '80.0 < x < 180.0'},
+        "bp_left_sys": {"conditions": 'not empty, < 80, > 180', "reference_interval": '80.0 < x < 180.0'},
+        "bp_right_dia": {"conditions": 'not empty, < 50, > 110', "reference_interval": '50.0 < x < 110.0'},
+        "bp_left_dia": {"conditions": 'not empty, < 50, > 110', "reference_interval": '50.0 < x < 110.0'},
+        "pulse_right": {"conditions": 'not empty, < 40, > 120', "reference_interval": '40.0 < x < 120.0'},
+        "pulse_left": {"conditions": 'not empty, < 40, > 120', "reference_interval": '40.0 < x < 120.0'},
+        "bp_right_sys,bp_left_sys": {"conditions": 'abs(bp_right_sys - bp_left_sys) > 20', "reference_interval": 'abs(bp_right_sys - bp_left_sys) > 20'},
+        "bp_right_dia,bp_left_dia": {"conditions": 'abs(bp_right_dia - bp_left_dia) > 10', "reference_interval": 'abs(bp_right_dia - bp_left_dia) > 10'}
+    }
+
+    output = parse_conditions(condition_str)
+    assert output == expected_output, f"Expected {expected_output}, but got {output}"
+
+
 def test_create_alerts_from_dataframe():
     # Create a mock DataFrame
     data = {
@@ -76,22 +103,18 @@ def test_create_alerts_from_dataframe():
 
     # Verify Alert 2
     assert alerts[1].title == 'Alert 2'
-    assert alerts[1].alert_dict["bp_right_sys"]["condition"] == 'not empty, < 80, > 180'
+    assert alerts[1].alert_dict["bp_right_sys"]["condition"] == 'not empty, < 80, > 180, abs(bp_right_sys - bp_left_sys) > 20'
     assert alerts[1].alert_dict["bp_right_sys"]["reference_interval"] == '80.0 < x < 180.0'
-    assert alerts[1].alert_dict["bp_left_sys"]["condition"] == 'not empty, < 80, > 180'
+    assert alerts[1].alert_dict["bp_left_sys"]["condition"] == 'not empty, < 80, > 180, abs(bp_right_sys - bp_left_sys) > 20'
     assert alerts[1].alert_dict["bp_left_sys"]["reference_interval"] == '80.0 < x < 180.0'
-    assert alerts[1].alert_dict["bp_right_dia"]["condition"] == 'not empty, < 50, > 110'
+    assert alerts[1].alert_dict["bp_right_dia"]["condition"] == 'not empty, < 50, > 110, abs(bp_right_dia - bp_left_dia) > 10'
     assert alerts[1].alert_dict["bp_right_dia"]["reference_interval"] == '50.0 < x < 110.0'
-    assert alerts[1].alert_dict["bp_left_dia"]["condition"] == 'not empty, < 50, > 110'
+    assert alerts[1].alert_dict["bp_left_dia"]["condition"] == 'not empty, < 50, > 110, abs(bp_right_dia - bp_left_dia) > 10'
     assert alerts[1].alert_dict["bp_left_dia"]["reference_interval"] == '50.0 < x < 110.0'
     assert alerts[1].alert_dict["pulse_right"]["condition"] == 'not empty, < 40, > 120'
     assert alerts[1].alert_dict["pulse_right"]["reference_interval"] == '40.0 < x < 120.0'
     assert alerts[1].alert_dict["pulse_left"]["condition"] == 'not empty, < 40, > 120'
     assert alerts[1].alert_dict["pulse_left"]["reference_interval"] == '40.0 < x < 120.0'
-    assert alerts[1].alert_dict["bp_right_sys,bp_left_sys"]["condition"] == 'abs(bp_right_sys - bp_left_sys) > 20'
-    assert alerts[1].alert_dict["bp_right_sys,bp_left_sys"]["reference_interval"] == 'abs(bp_right_sys - bp_left_sys) > 20'
-    assert alerts[1].alert_dict["bp_right_dia,bp_left_dia"]["condition"] == 'abs(bp_right_dia - bp_left_dia) > 10'
-    assert alerts[1].alert_dict["bp_right_dia,bp_left_dia"]["reference_interval"] == 'abs(bp_right_dia - bp_left_dia) > 10'
     assert alerts[1].active is False
 
     # Verify that the alerts were added to the project_instance

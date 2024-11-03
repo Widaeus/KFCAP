@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
-from src.utils.utils import define_url_token_project, clear_window, display_alerts_window, browse_files
-from src.utils.alert_handling import load_csv, find_deviating_records
+from src.utils.utils import clear_window, display_alerts_window, browse_files
+from src.utils.alert_handling import load_csv, check_deviations, create_alerts_from_dataframe
 from src.models.session_manager import session_manager
 
 def show_alert_handling(root):
@@ -16,21 +16,34 @@ def show_alert_handling(root):
     # Title
     label_title = ctk.CTkLabel(frame, text="Alert handling", font=("Arial", 16, "bold"))
     label_title.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+    
+    # Check for cached API token
+    cached_api_token = session_manager.get_api_token()
+
+    # Determine the subtitle text based on the presence of the cached API token
+    if cached_api_token:
+        project_instance = session_manager.get_project_instance()
+        project_info = project_instance.export_project_info()
+        project_title = project_info.get('project_title', 'Unknown Project')
+        subtitle_text = project_title if project_title else "No cached API token"
+    else:
+        subtitle_text = "No cached API token"
 
     # Subtitle
     label_subtitle = ctk.CTkLabel(
         frame, 
-        text="Please read description before use.", 
-        font=("Arial", 12)
+        text=subtitle_text, 
+        font=("Arial", 12),
+        text_color="green"
     )
     label_subtitle.grid(row=1, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
 
     # Alert conditions file
     label_alert_conditions = ctk.CTkLabel(frame, text="Alert Conditions File")
-    label_alert_conditions.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+    label_alert_conditions.grid(row=2, column=0, padx=10, pady=10, sticky="e")
 
     entry_alert_conditions = ctk.CTkEntry(frame, width=300)
-    entry_alert_conditions.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+    entry_alert_conditions.grid(row=2, column=1, padx=10, pady=10, sticky="w")
 
     def load_alert_titles():
         file_path = entry_alert_conditions.get()
@@ -42,7 +55,7 @@ def show_alert_handling(root):
                 dropdown_alert_titles.insert(tk.END, title)
 
     button_browse = ctk.CTkButton(frame, text="Browse", command=lambda: [browse_files(entry_alert_conditions), load_alert_titles()])
-    button_browse.grid(row=3, column=2, padx=10, pady=10, sticky="w")
+    button_browse.grid(row=2, column=2, padx=10, pady=10, sticky="w")
     
     # Dropdown for alert titles
     label_select_alerts = ctk.CTkLabel(frame, text="Select Alerts")
@@ -59,12 +72,17 @@ def show_alert_handling(root):
     def run_alert_handling():
         selected_indices = dropdown_alert_titles.curselection()
         selected_alerts = [dropdown_alert_titles.get(i) for i in selected_indices]
+        redcap_data = project_instance.export_records(format_type="df")
+        
         file_path = entry_alert_conditions.get()
-        df = load_csv(file_path)
-        selected_conditions = df[df['alert-title'].isin(selected_alerts)]['alert-condition'].tolist()
-        project = define_url_token_project(entry_api_token.get())
-        records_info = find_deviating_records(project, selected_conditions)
-        display_alerts_window(records_info, root)
+        csv_df = load_csv(file_path)
+        
+        filtered_alerts_df = csv_df[csv_df['alert-title'].isin(selected_alerts)]
+        
+        alerts = create_alerts_from_dataframe(filtered_alerts_df, project_instance)
+        deviating_vars = check_deviations(redcap_data, project_instance)
+        
+        display_alerts_window(deviating_vars, alerts, redcap_data, project_instance, root)
 
     button_run = ctk.CTkButton(
         button_frame, 

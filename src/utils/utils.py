@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from src.redcap.project import Project
 import pandas as pd
-from src.utils.alert_handling import find_study_id, find_deviating_records, load_csv
+from src.utils.alert_handling import find_study_id, check_deviations, load_csv
 
 entry_data_path = None
 
@@ -62,9 +62,13 @@ def clear_window(root):
     for widget in root.winfo_children():
         widget.destroy()
 
-def display_alerts_window(records_info, root):
-    """Display a window showing deviating records with Study ID, variable names, values, and reference intervals."""
-    study_ids = list(records_info.keys())
+
+
+
+
+
+def display_alerts_window(deviating_vars, alerts, redcap_data, project_instance, root):
+    study_ids = sorted(deviating_vars.keys())
     current_index = [0]
 
     # Create the top-level window
@@ -88,8 +92,38 @@ def display_alerts_window(records_info, root):
     # List to store dynamically created labels for each variable
     value_labels = []
 
+    # Export records from project_instance
+    records_df = redcap_data.set_index(find_study_id(project_instance))
+
+    # Build a dictionary to hold the detailed info for each study_id
+    records_info = {}
+    for study_id in study_ids:
+        # Initialize study_id entry with all alerts
+        records_info[study_id] = {}
+        for alert in alerts:
+            for var_name, details in alert.alert_dict.items():
+                value = records_df.at[study_id, var_name] if study_id in records_df.index and var_name in records_df.columns else "N/A"
+                records_info[study_id][var_name] = {
+                    'value': value,
+                    'condition': details['reference_interval'],
+                    'deviated': False
+                }
+        
+        # Update deviating vars with actual values and deviation status
+        if study_id in deviating_vars:
+            for deviated_var in deviating_vars[study_id]:
+                records_info[study_id][deviated_var]['deviated'] = True
+
     def update_display():
         """Update the display to show details for the current study ID."""
+        if not study_ids:
+            label_study_id.configure(text="No valid Study IDs available.")
+            return
+
+        if current_index[0] >= len(study_ids) or current_index[0] < 0:
+            label_study_id.configure(text="Study ID index out of range.")
+            return
+
         study_id = study_ids[current_index[0]]
         total_records = len(study_ids)
         label_study_id.configure(text=f"Study ID: {study_id} ({current_index[0] + 1}/{total_records})")
@@ -146,6 +180,10 @@ def display_alerts_window(records_info, root):
 
     # Initial display
     update_display()
+
+
+
+
 
 def center_window(win, width, height):
     screen_width = win.winfo_screenwidth()
