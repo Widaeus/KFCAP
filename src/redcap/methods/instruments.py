@@ -1,8 +1,8 @@
 """REDCap API methods for Project instruments"""
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
 
-from redcap.methods.base import Base, FileMap
-from redcap.request import Json
+from src.redcap.methods.base import Base, FileMap
+from src.redcap.request import Json
 
 if TYPE_CHECKING:
     import pandas as pd

@@ -8,6 +8,8 @@ import re
 
 entry_data_path = None
 
+import urllib.request
+
 def validate_api_token(api_token, label_validation):
     if len(api_token) < 32:
         label_validation.configure(text="Invalid token", text_color="red")

@@ -2,8 +2,8 @@
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union, cast
 
-from redcap.methods.base import Base, FileMap
-from redcap.request import EmptyJson, FileUpload
+from src.redcap.methods.base import Base, FileMap
+from src.redcap.request import EmptyJson, FileUpload
 
 if TYPE_CHECKING:
     from io import TextIOWrapper

@@ -12,7 +12,7 @@ from typing import (
     cast,
 )
 
-from redcap.methods.base import Base, Json
+from src.redcap.methods.base import Base, Json
 
 if TYPE_CHECKING:
     import pandas as pd

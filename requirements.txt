@@ -19,6 +19,7 @@ iniconfig==2.0.0
 isort==5.13.2
 kiwisolver==1.4.7
 magicmock==0.3
+Markdown==3.7
 matplotlib==3.9.2
 mccabe==0.7.0
 mypy==1.13.0
@@ -29,7 +30,7 @@ packaging==24.1
 pandas==2.2.3
 pathspec==0.12.1
 pefile==2023.2.7
-pillow==11.0.0
+pillow==10.4.0
 platformdirs==4.3.6
 pluggy==1.5.0
 ply==3.11
@@ -47,6 +48,8 @@ responses==0.25.3
 semantic-version==2.10.0
 setuptools==75.2.0
 six==1.16.0
+tkhtmlview==0.3.1
+tkinterweb==3.24.7
 tomlkit==0.13.2
 typing_extensions==4.12.2
 tzdata==2024.2

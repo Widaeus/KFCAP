@@ -1,7 +1,9 @@
 import customtkinter as ctk
+import os
 from src.utils.utils import clear_window, validate_api_token
 from src.models.session_manager import session_manager
 from src.models.project import redcapProj
+from src.windows.infobox import show_docs
 
 def show_main_menu(root):
     from src.windows.data_import import show_data_import
@@ -19,8 +21,8 @@ def show_main_menu(root):
 
     # Configure rows and columns in the main frame
     frame.grid_rowconfigure(0, weight=1)  # Title row
-    frame.grid_rowconfigure(1, weight=0)  # Subtitle row
-    frame.grid_rowconfigure(2, weight=0)  # API Token row
+    frame.grid_rowconfigure(1, weight=1)  # Subtitle row
+    frame.grid_rowconfigure(2, weight=1)  # API Token row
     frame.grid_rowconfigure(3, weight=1)  # Button frame row
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_columnconfigure(1, weight=1)
@@ -101,4 +103,7 @@ def show_main_menu(root):
         button_data_import.configure(state="normal" if is_valid else "disabled", fg_color="green" if is_valid else "transparent")
         button_alert_handling.configure(state="normal" if is_valid else "disabled", fg_color="green" if is_valid else "transparent")
         button_letter_generation.configure(state="normal" if is_valid else "disabled", fg_color="green" if is_valid else "transparent")
-    
+
+    # Info Button
+    info_button = ctk.CTkButton(frame, text="i", width=20, height=20, command=lambda: show_docs(root))
+    info_button.grid(row=0, column=2, padx=15, pady=15, sticky="ne")

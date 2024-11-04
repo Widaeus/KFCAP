@@ -6,7 +6,7 @@ from typing import Optional
 
 import semantic_version
 
-from redcap import methods
+from src.redcap import methods
 
 __author__ = "Scott Burns <scott.s.burnsgmail.com>"
 __license__ = "MIT"
@@ -16,7 +16,6 @@ __copyright__ = "2014, Vanderbilt University"
 # explicitly requested by the user. We also want to keep the methods separated,
 # which means multi-layered inheritance is our best bet.
 # pylint: disable=attribute-defined-outside-init,too-many-ancestors
-
 
 class Project(
     methods.arms.Arms,

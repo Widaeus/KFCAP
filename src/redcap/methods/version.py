@@ -4,7 +4,7 @@ from typing import Optional
 
 import semantic_version
 
-from redcap.methods.base import Base
+from src.redcap.methods.base import Base
 
 
 class Version(Base):

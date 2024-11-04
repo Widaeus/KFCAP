@@ -9,7 +9,7 @@ entry_api_token = None
 combo_data_form = None
 root = ctk.CTk()
 root.title("KFCap v1.0.2")
-WINDOW_WIDTH = 700
+WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 500
 root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 

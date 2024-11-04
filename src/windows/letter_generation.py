@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
 from src.utils.utils import validate_api_token, clear_window
+from src.windows.infobox import show_docs
 
 def show_letter_generation(root):
     from src.windows.main_menu import show_main_menu
@@ -102,3 +103,7 @@ def show_letter_generation(root):
     # Back button
     button_back = ctk.CTkButton(frame, text="Back", command=lambda: show_main_menu(root))
     button_back.grid(row=5, column=2, padx=5, pady=10, sticky="w")
+
+    # Info Button
+    info_button = ctk.CTkButton(frame, text="i", width=20, height=20, command=lambda: show_docs(root))
+    info_button.grid(row=0, column=2, padx=15, pady=15, sticky="ne")

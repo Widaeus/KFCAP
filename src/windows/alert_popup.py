@@ -3,6 +3,7 @@ import customtkinter as ctk
 import pandas as pd
 from src.utils.utils import find_study_id
 from src.utils.utils import center_window
+from src.windows.infobox import show_docs
 
 def display_alerts_popup(deviating_vars, alerts, redcap_data, project_instance, root):
     study_ids = sorted(deviating_vars.keys())

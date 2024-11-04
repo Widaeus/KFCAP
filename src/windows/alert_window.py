@@ -4,6 +4,7 @@ from src.utils.utils import clear_window, browse_files, load_csv
 from src.utils.parser import alerts_from_df_revised, check_deviations_revised
 from src.models.session_manager import session_manager
 from src.windows.alert_popup import display_alerts_popup
+from src.windows.infobox import show_docs
 
 def show_alert_handling(root):
     from src.windows.main_menu import show_main_menu
@@ -94,3 +95,7 @@ def show_alert_handling(root):
 
     # Back button
     ctk.CTkButton(button_frame, text="Back", command=lambda: show_main_menu(root)).pack(side="left", padx=10)
+    
+    # Info Button
+    info_button = ctk.CTkButton(frame, text="i", width=20, height=20, command=lambda: show_docs(root))
+    info_button.grid(row=0, column=2, padx=15, pady=15, sticky="ne")

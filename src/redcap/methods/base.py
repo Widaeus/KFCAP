@@ -18,7 +18,7 @@ from typing import (
 
 from io import StringIO
 
-from redcap.request import (
+from src.redcap.request import (
     _ContentConfig,
     _RCRequest,
     RedcapError,

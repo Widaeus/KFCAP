@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from redcap.project import Project
+from src.redcap.project import Project
 from tests.integration.conftest import (
     create_project,
     grant_superuser_rights,

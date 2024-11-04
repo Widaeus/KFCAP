@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from src.utils.utils import clear_window, browse_files, run_process
 from src.models.session_manager import session_manager
+from src.windows.infobox import show_docs
 
 def show_data_import(root):
     from src.windows.main_menu import show_main_menu
@@ -59,3 +60,7 @@ def show_data_import(root):
     # Back button
     button_back = ctk.CTkButton(button_frame, text="Back", command=lambda: show_main_menu(root))
     button_back.pack(side="left", padx=10)
+    
+    # Info Button
+    info_button = ctk.CTkButton(frame, text="i", width=20, height=20, command=lambda: show_docs(root))
+    info_button.grid(row=0, column=2, padx=15, pady=15, sticky="ne")

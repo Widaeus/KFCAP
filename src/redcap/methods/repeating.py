@@ -1,8 +1,8 @@
 """REDCap API methods for Project repeating instruments"""
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, Literal, cast
 
-from redcap.methods.base import Base
-from redcap.request import Json
+from src.redcap.methods.base import Base
+from src.redcap.request import Json
 
 if TYPE_CHECKING:
     import pandas as pd
